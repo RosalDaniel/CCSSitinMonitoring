@@ -1,0 +1,33 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7fc;
+    display: flex;
+}
+.sidebar {
+    width: 200px;
+    min-width: 200px; /* Prevent shrinking */
+    max-width: 200px; /* Prevent growing */
+    flex-shrink: 0;
+    background-color: #112D4E;
+    color: white;
+    min-height: 100vh;
+    height: auto;
+    padding: 20px;
+}
+.sidebar a {
+    color: white;
+    text-decoration: none;
+    display: flex;            
+    align-items: center;      /* Vertically center items */
+    gap: 20px;                /* Add space between icon and text */
+    padding: 10px 0;
+}
+.sidebar a i {
+    width: 20px; /* Set a fixed width for icons */
+    text-align: center; /* Center the icon */
+}
+.sidebar a:hover {
+    background-color: #3F72AF;
+}
