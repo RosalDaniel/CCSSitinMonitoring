@@ -318,7 +318,7 @@
                 labels: <?php echo json_encode(array_keys($purpose)); ?>,
                 datasets: [{
                     data: <?php echo json_encode(array_values($purpose)); ?>,
-                    backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56', '#8BC34A', '#009688'],
+                    backgroundColor: ['#C14600', '#FF9D23', '#E5D0AC', '#8D0B41', '#FCF596'],
                 }]
             }
         });

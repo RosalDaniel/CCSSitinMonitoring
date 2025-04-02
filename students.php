@@ -56,7 +56,7 @@
             border: none;
             border-radius: 5px; /* Rounded edges for consistency */
             cursor: pointer;
-            width: 80px; /* Forces buttons to have the same width */
+            width: 70px; /* Forces buttons to have the same width */
             text-align: center;
         }
         .header-btn {
@@ -64,7 +64,7 @@
             justify-content: flex-end;
             margin-bottom: 20px;
         }
-        .edit-btn {border: none; background: none; color: #112D4E; }
+        .edit-btn {background: #112D4E; color: white; }
         .delete-btn, .reset-btn { background-color: #f44336; color: white; }
         .add-btn, .reset-btn {
             color: #fff;
@@ -106,7 +106,7 @@
 <div class="content">
     <div class="header">STUDENTS INFORMATION</div>
     <div class="header-btn">
-        <button onclick="window.location.href='add_student.php'" class="add-btn" title="Add student">Add Student</button>
+        <button onclick="window.location.href='add_student.php'" class="add-btn" title="Add student">+ Add Student</button>
         <button onclick="window.location.href='reset_sessions.php'" class="reset-btn" title="Reset sessions">Reset All Session</button>
     </div>
     <table id="studentsInfo" class="display">
@@ -137,8 +137,8 @@
                     echo "<td>{$row['course']}</td>";
                     echo "<td>{$row['sessions']}</td>";
                     echo "<td class='actions'>
-                            <a href='editstudent.php?id={$row['idno']}'><button class='edit-btn' title='Edit student'>Edit</button></a>
-                            <button class='delete-btn' onclick=\"if(confirm('Are you sure you want to delete this student?')) window.location.href='deletestudent.php?id={$row['idno']}'\" title='Delete student'>Delete</button>
+                            <a href='editstudent.php?id={$row['idno']}'><button class='edit-btn' title='Edit student'><i class='fa-solid fa-pen'></i></button></a>
+                            <button class='delete-btn' onclick=\"if(confirm('Are you sure you want to delete this student?')) window.location.href='deletestudent.php?id={$row['idno']}'\" title='Delete student'><i class='fa-solid fa-trash'></i></button>
                         </td>";
                     echo "</tr>";
                 }
