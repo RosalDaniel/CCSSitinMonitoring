@@ -13,7 +13,7 @@
             TIME(r.date_time) as login_time, TIME(r.logout_time) as logout_time 
         FROM sit_in_records r 
         JOIN student s ON r.idno = s.idno
-        WHERE s.username = '$username' AND r.logout_time IS NOT NULL
+        WHERE s.username = '$username' AND r.logout_time IS NOT NULL ORDER BY r.date_time DESC
     ");
 ?>
 
@@ -162,6 +162,7 @@
             $('#sitInRecords').DataTable({
                 responsive: true,
                 ordering: true,
+                order: [[4, 'desc']],
                 search: true
             });
         });
