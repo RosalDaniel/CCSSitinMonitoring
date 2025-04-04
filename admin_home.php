@@ -279,6 +279,7 @@
                                 <option value="project management">Project Management</option>
                                 <option value="python programming">Python Programming</option>
                                 <option value="mobile application">Mobile Application</option>
+                                <option value="web development">Web Development</option>
                             </select>
                             <label>Lab:</label>
                             <select name="lab" required>
