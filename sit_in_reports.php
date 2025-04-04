@@ -7,7 +7,7 @@ $purposes = $conn->query("SELECT DISTINCT purpose FROM sit_in_records");
 $labs = $conn->query("SELECT DISTINCT lab FROM sit_in_records");
 
 // Fetch sit-in records with student names
-$result = $conn->query("SELECT r.id, r.idno, CONCAT(s.lastname, ', ', s.firstname, ' ', s.middlename) AS name, r.purpose, r.lab, DATE(r.date_time) as date, TIME(r.date_time) as login_time, TIME(r.logout_time) as logout_time FROM sit_in_records r JOIN student s ON r.idno = s.idno");
+$result = $conn->query("SELECT r.id, r.idno, CONCAT(s.lastname, ', ', s.firstname, ' ', s.middlename) AS name, r.purpose, r.lab, DATE(r.date_time) as date, TIME(r.date_time) as login_time, TIME(r.logout_time) as logout_time FROM sit_in_records r JOIN student s ON r.idno = s.idno WHERE r.logout_time IS NOT NULL");
 
 ?>
 
@@ -101,8 +101,8 @@ $result = $conn->query("SELECT r.id, r.idno, CONCAT(s.lastname, ', ', s.firstnam
                 <option value="<?php echo $row['lab']; ?>"><?php echo $row['lab']; ?></option>
             <?php endwhile; ?>
         </select>
-
-            <input type="date" id="filterDate">
+<!-- 
+            <input type="date" id="filterDate"> -->
 
     </div>
 
