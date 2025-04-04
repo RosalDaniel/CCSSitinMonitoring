@@ -78,6 +78,20 @@ $result = $conn->query("SELECT r.id, r.idno, CONCAT(s.lastname, ', ', s.firstnam
         .dt-buttons {
             margin-bottom: 10px;
         }
+        @media print {
+        .header {
+            position: relative;
+            text-align: center !important;
+            margin: 0 auto 20px auto;
+            float: none !important;
+            width: 100%;
+        }
+
+        body {
+            -webkit-print-color-adjust: exact; /* Keep background colors */
+            print-color-adjust: exact;
+        }
+    }
     </style>
 </head>
 <body>
@@ -145,8 +159,58 @@ $result = $conn->query("SELECT r.id, r.idno, CONCAT(s.lastname, ', ', s.firstnam
             buttons: [
                 { extend: 'csv', text: '<i class="fas fa-file-csv"></i> CSV', className: 'btn btn-primary' },
                 { extend: 'excel', text: '<i class="fas fa-file-excel"></i> Excel', className: 'btn btn-success' },
-                { extend: 'pdf', text: '<i class="fas fa-file-pdf"></i> PDF', className: 'btn btn-danger' },
-                { extend: 'print', text: '<i class="fas fa-print"></i> Print', className: 'btn btn-info' }
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="fas fa-file-pdf"></i> PDF',
+                    className: 'btn btn-danger',
+                    title: ' ',
+                    filename: 'Sit-in Reports',
+                    customize: function(doc) {
+                        doc.content.splice(0, 0, {
+                            text: [
+                                'University of Cebu\n',
+                                'College of Computer Studies\n',
+                                'Computer Laboratory Sit in Monitoring System Report\n\n'
+                            ],
+                            margin: [0, 0, 0, 12],
+                            alignment: 'center',
+                            fontSize: 12,
+                            bold: true
+                        });
+                    }
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="fas fa-print"></i> Print',
+                    className: 'btn btn-info',
+                    customize: function (win) {
+                        // Add the header at the top center
+                        $(win.document.body).prepend(
+                            '<div style="text-align: center; margin-bottom: 20px;">' +
+                                '<h2 style="font-size: 16pt; font-weight: bold;">University of Cebu</h2>' +
+                                '<h3 style="font-size: 14pt;">College of Computer Studies</h3>' +
+                                '<h4 style="font-size: 14pt;">Computer Laboratory Sit-in Monitoring System Report</h4>' +
+                            '</div>'
+                        );
+
+                        // Ensure the table takes up 100% of the width in print view
+                        $(win.document.body).find('table').css('width', '100%');
+
+                        // Apply print-specific styling
+                        $(win.document.body).css('font-family', 'Arial, sans-serif');
+                        $(win.document.body).css('font-size', '12pt');
+                        $(win.document.body).find('h2, h3, h4').css({
+                            'margin': '0',
+                            'padding': '0',
+                        });
+
+                        // Add some padding to the body of the printout for spacing
+                        $(win.document.body).css('padding', '20px');
+                    }
+                }
+
+
+
             ]
         });
 
