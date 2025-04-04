@@ -1,28 +1,39 @@
 <?php
 session_start();
 include 'sidebar.php';
-include 'db_connect.php'; 
+include 'db_connect.php';
 
-// List of foul words (expand as needed)
-$foul_words = ['fuck you', 'yawa', 'pisti']; // Add more as required
+try {
+    // Secure SQL query using prepared statements
+    $stmt = $conn->prepare("
+        SELECT 
+            f.id AS feedback_id,
+            s.idno AS student_id,
+            s.lastname, s.firstname, s.middlename,
+            r.lab, s.course,
+            DATE(r.date_time) AS date,
+            TIME(r.date_time) AS login_time,
+            TIME(r.logout_time) AS logout_time,
+            f.feedback_text
+        FROM feedback f
+        JOIN sit_in_records r ON f.record_id = r.id
+        JOIN student s ON r.idno = s.idno
+        ORDER BY r.date_time DESC
+    ");
+    
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-// Fetch feedback records with student details
-$sql = "
-    SELECT 
-        f.id AS feedback_id,
-        s.idno AS student_id,
-        s.lastname, s.firstname, s.middlename,
-        r.lab, s.course,
-        DATE(r.date_time) AS date,
-        TIME(r.date_time) AS login_time,
-        TIME(r.logout_time) AS logout_time,
-        f.feedback_text
-    FROM feedback f
-    JOIN sit_in_records r ON f.record_id = r.id
-    JOIN student s ON r.idno = s.idno
-    ORDER BY r.date_time DESC";
+} catch (Exception $e) {
+    die("Database Error: " . $e->getMessage());
+}
 
-$result = $conn->query($sql);
+// Foul words filtering using regex
+$foul_words = ['fuck', 'yawa', 'pisti']; // Extend as needed
+function containsFoulWords($text, $words) {
+    $pattern = '/' . implode('|', array_map('preg_quote', $words)) . '/i';
+    return preg_match($pattern, $text);
+}
 ?>
 
 <!DOCTYPE html>
@@ -37,46 +48,88 @@ $result = $conn->query($sql);
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <style>
-        .content {
-            flex-grow: 1;
-            padding: 20px;
-        }
-        .header {
-            background: #112D4E;
-            color: #fff;
-            padding: 20px 30px;
-            text-align: center;
-            font-size: 24px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-        }
-        table, th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #112D4E;
-            color: white;
-        }
-        .feedback-cell {
-            max-width: 300px; 
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-        }
-        .feedback-cell:hover {
-            white-space: normal;
-            overflow: visible;
-            background: #f8f9fa;
-            padding: 5px;
-            border-radius: 5px;
-        }
+        :root {
+    --primary-color: #112D4E;
+    --secondary-color: #F9F9F9;
+    --text-color: #1F2937;
+    --warning-color: #E63946;
+    --border-radius: 8px;
+    --transition-speed: 0.3s;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: var(--secondary-color);
+    color: var(--text-color);
+    display: flex;
+}
+
+.content {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+.header {
+    background: var(--primary-color);
+    color: white;
+    text-align: center;
+    font-size: 1.5rem;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+th {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 10px;
+}
+
+td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.feedback-cell {
+    max-width: 300px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.feedback-cell:hover {
+    white-space: normal;
+    overflow: visible;
+    background: var(--secondary-color);
+    padding: 5px;
+    border-radius: var(--border-radius);
+}
+
+.flagged {
+    color: var(--warning-color);
+    font-weight: bold;
+}
+
+.warning {
+    color: var(--warning-color);
+    font-size: 0.85rem;
+    font-weight: bold;
+    display: block;
+}
+
+.status-in {
+    font-weight: bold;
+    color: green;
+}
+
     </style>
 </head>
 <body>
@@ -98,33 +151,25 @@ $result = $conn->query($sql);
             </thead>
             <tbody>
                 <?php while ($row = $result->fetch_assoc()) : ?>
-                <?php 
-                    $feedback = htmlspecialchars($row['feedback_text']);
-                    $contains_foul_word = false;
-
-                    // Check if feedback contains foul words
-                    foreach ($foul_words as $word) {
-                        if (stripos($feedback, $word) !== false) {
-                            $contains_foul_word = true;
-                            break;
-                        }
-                    }
-                ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($row['student_id']); ?></td>
-                    <td><?php echo htmlspecialchars($row['lastname'] . ", " . $row['firstname'] . " " . $row['middlename']); ?></td>
-                    <td><?php echo htmlspecialchars($row['course']); ?></td>
-                    <td><?php echo htmlspecialchars($row['lab']); ?></td>
-                    <td><?php echo htmlspecialchars($row['login_time']); ?></td>
-                    <td><?php echo $row['logout_time'] ? htmlspecialchars($row['logout_time']) : "Still Logged In"; ?></td>
-                    <td><?php echo htmlspecialchars($row['date']); ?></td>
-                    <td class="feedback-cell" style="color: <?php echo $contains_foul_word ? 'red' : 'black'; ?>">
-                        <?php echo nl2br($feedback); ?>
-                        <?php if ($contains_foul_word) : ?>
-                            <span style="color: red; font-weight: bold;"> ⚠ Contains inappropriate language</span>
-                        <?php endif; ?>
-                    </td>
-                </tr>
+                    <?php 
+                        $feedback = htmlspecialchars($row['feedback_text']);
+                        $contains_foul_word = containsFoulWords($feedback, $foul_words);
+                    ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($row['student_id']); ?></td>
+                        <td><?php echo htmlspecialchars("{$row['lastname']}, {$row['firstname']} {$row['middlename']}"); ?></td>
+                        <td><?php echo htmlspecialchars($row['course']); ?></td>
+                        <td><?php echo htmlspecialchars($row['lab']); ?></td>
+                        <td><?php echo htmlspecialchars($row['login_time']); ?></td>
+                        <td><?php echo $row['logout_time'] ? htmlspecialchars($row['logout_time']) : "<span class='status-in'>Still Logged In</span>"; ?></td>
+                        <td><?php echo htmlspecialchars($row['date']); ?></td>
+                        <td class="feedback-cell <?php echo $contains_foul_word ? 'flagged' : ''; ?>">
+                            <?php echo nl2br($feedback); ?>
+                            <?php if ($contains_foul_word) : ?>
+                                <span class="warning">⚠ Inappropriate Language</span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
                 <?php endwhile; ?>
             </tbody>
         </table>
@@ -135,7 +180,8 @@ $result = $conn->query($sql);
             $('#feedbackTable').DataTable({
                 responsive: true,
                 ordering: true,
-                search: true
+                search: true,
+                order: [[6, 'desc']]
             });
         });
     </script>

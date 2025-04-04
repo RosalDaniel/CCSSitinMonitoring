@@ -131,7 +131,7 @@ while ($row = $labQuery->fetch_assoc()) {
                 labels: Object.keys(purposeData),
                 datasets: [{
                     data: Object.values(purposeData),
-                    backgroundColor: ['#C14600', '#FF9D23', '#E5D0AC', '#8D0B41', '#FCF596'],
+                    backgroundColor: ['#C14600', '#FF9D23', '#E5D0AC', '#8D0B41', '#FCF596', '#102C57', '#C63D2F', '#F5F5DC', '#C70039', '#F94C10', '#C40C0C', '#FF6500', '#6C0345'],
                 }]
             }
         });
@@ -143,7 +143,7 @@ while ($row = $labQuery->fetch_assoc()) {
                 labels: Object.keys(labData),
                 datasets: [{
                     data: Object.values(labData),
-                    backgroundColor: ['#10375C', '#FFB22C', '#FEF9E1', '#EB5A3C', '#D98324', '#821131'],
+                    backgroundColor: ['#10375C', '#FFB22C', '#FEF9E1', '#EB5A3C', '#D98324', '#821131', '#F94C10'],
                 }]
             }
         });

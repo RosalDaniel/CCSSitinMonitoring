@@ -271,9 +271,18 @@
                                 <option value="java programming">Java Programming</option>
                                 <option value="php programming">PHP Programming</option>
                                 <option value="asp.net programming">ASP.Net Programming</option>
+                                <option value="systems integration and architecture">Systems Integration & Architecture</option>
+                                <option value="embedded systems and iot">Embedded Systems & IOT</option>
+                                <option value="digital logic and design">Digital Logic & Design</option>
+                                <option value="computer application">Computer Application</option>
+                                <option value="database">Database</option>
+                                <option value="project management">Project Management</option>
+                                <option value="python programming">Python Programming</option>
+                                <option value="mobile application">Mobile Application</option>
                             </select>
                             <label>Lab:</label>
                             <select name="lab" required>
+                                <option value="517">517</option>
                                 <option value="524">524</option>
                                 <option value="526">526</option>
                                 <option value="528">528</option>
@@ -318,7 +327,7 @@
                 labels: <?php echo json_encode(array_keys($purpose)); ?>,
                 datasets: [{
                     data: <?php echo json_encode(array_values($purpose)); ?>,
-                    backgroundColor: ['#C14600', '#FF9D23', '#E5D0AC', '#8D0B41', '#FCF596'],
+                    backgroundColor: ['#C14600', '#FF9D23', '#E5D0AC', '#8D0B41', '#FCF596', '#102C57', '#C63D2F', '#F5F5DC', '#C70039', '#F94C10', '#C40C0C', '#FF6500', '#6C0345'],
                 }]
             }
         });
