@@ -29,7 +29,7 @@ try {
 }
 
 // Foul words filtering using regex
-$foul_words = ['fuck', 'yawa', 'pisti']; // Extend as needed
+$foul_words = ['fuck', 'yawa', 'pisti', 'boang', 'bogo', 'shit'];
 function containsFoulWords($text, $words) {
     $pattern = '/' . implode('|', array_map('preg_quote', $words)) . '/i';
     return preg_match($pattern, $text);

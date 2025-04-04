@@ -7,7 +7,8 @@ $purposes = $conn->query("SELECT DISTINCT purpose FROM sit_in_records");
 $labs = $conn->query("SELECT DISTINCT lab FROM sit_in_records");
 
 // Fetch sit-in records with student names
-$result = $conn->query("SELECT r.id, r.idno, CONCAT(s.lastname, ', ', s.firstname, ' ', s.middlename) AS name, r.purpose, r.lab, DATE(r.date_time) as date, TIME(r.date_time) as login_time, TIME(r.logout_time) as logout_time FROM sit_in_records r JOIN student s ON r.idno = s.idno WHERE r.logout_time IS NOT NULL");
+$result = $conn->query("SELECT r.id, r.idno, CONCAT(s.lastname, ', ', s.firstname, ' ', s.middlename) AS name, r.purpose, r.lab, DATE(r.date_time) as date, TIME(r.date_time) as login_time, TIME(r.logout_time) as logout_time FROM sit_in_records r JOIN student s ON r.idno = s.idno WHERE r.logout_time IS NOT NULL ORDER BY r.date_time DESC");
+
 
 ?>
 
@@ -139,12 +140,13 @@ $result = $conn->query("SELECT r.id, r.idno, CONCAT(s.lastname, ', ', s.firstnam
         var table = $('#sitInRecords').DataTable({
             responsive: true,
             ordering: true,
+            order: [[4, 'desc']],
             dom: 'Bfrtip',
             buttons: [
-                { extend: 'csv', text: 'CSV', className: 'btn btn-primary' },
-                { extend: 'excel', text: 'Excel', className: 'btn btn-success' },
-                { extend: 'pdf', text: 'PDF', className: 'btn btn-danger' },
-                { extend: 'print', text: 'Print', className: 'btn btn-info' }
+                { extend: 'csv', text: '<i class="fas fa-file-csv"></i> CSV', className: 'btn btn-primary' },
+                { extend: 'excel', text: '<i class="fas fa-file-excel"></i> Excel', className: 'btn btn-success' },
+                { extend: 'pdf', text: '<i class="fas fa-file-pdf"></i> PDF', className: 'btn btn-danger' },
+                { extend: 'print', text: '<i class="fas fa-print"></i> Print', className: 'btn btn-info' }
             ]
         });
 
@@ -156,16 +158,16 @@ $result = $conn->query("SELECT r.id, r.idno, CONCAT(s.lastname, ', ', s.firstnam
             table.column(2).search(purpose).column(3).search(lab).draw();
         });
 
-         // Custom search function for filtering by date
-         $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-            let selectedDate = $('#filterDate').val();
-            let recordDate = data[5]; // Column index of Date
+        //  // Custom search function for filtering by date
+        //  $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+        //     let selectedDate = $('#filterDate').val();
+        //     let recordDate = data[5]; // Column index of Date
 
-            if (!selectedDate || recordDate === selectedDate) {
-                return true;
-            }
-            return false;
-        });
+        //     if (!selectedDate || recordDate === selectedDate) {
+        //         return true;
+        //     }
+        //     return false;
+        // });
 
         // Apply filter when date changes
         $('#filterDate').on('change', function() {
