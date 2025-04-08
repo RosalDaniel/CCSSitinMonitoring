@@ -189,7 +189,7 @@
                 </a>
         <div style="display: flex; gap: 20px;">
             <div id="sitInStats" class="card" style="flex: 1;">
-                <h2>📊 Statistics</h2>
+                <h2>Statistics</h2>
                 <p><strong>Students Registered:</strong> <span><?php echo $totalStudents; ?></span></p>
                 <p><strong>Currently Sit-in:</strong> <span id="currentSitInCount"><?php echo $currentSitIn; ?></span></p>
                 <p><strong>Total Sit-in:</strong> <span><?php echo $totalSitIn; ?></span></p>
@@ -213,7 +213,7 @@
             ?>
 
             <div id="announcements" class="card" style="flex: 1;">
-                <h2>📢 Post New Announcement</h2>
+                <h2>Post New Announcement</h2>
                 <form method="POST">
                     <label for="title">Title:</label>
                     <input type="text" id="title" name="title" required>
@@ -226,7 +226,7 @@
                     </button>
                 </form>
 
-                <h2>📢 Announcements</h2>
+                <h2>Announcements</h2>
                 <?php
                 if ($announcementResult->num_rows > 0) {
                     while ($row = $announcementResult->fetch_assoc()) {
