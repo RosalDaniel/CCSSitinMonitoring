@@ -97,7 +97,9 @@ td {
     padding: 10px;
     border-bottom: 1px solid #ddd;
 }
-
+#feedbackTable{
+    padding-top: 20px;
+}
 .feedback-cell {
     max-width: 300px;
     overflow: hidden;
