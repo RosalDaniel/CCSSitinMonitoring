@@ -1,18 +1,42 @@
 <?php
 session_start();
 include 'auth_check.php';
-include 'sidebar.php'; // Assuming you have a sidebar for admin
+include 'sidebar.php';
 include 'db_connect.php';
 
 $message = "";
 $error = "";
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// Handle File Deletion
+if (isset($_POST['delete_file_id'])) {
+    $fileId = intval($_POST['delete_file_id']);
+
+    // Fetch file name to delete from disk
+    $fileQuery = $conn->query("SELECT filename FROM resource_files WHERE id = $fileId");
+    if ($fileQuery && $fileQuery->num_rows > 0) {
+        $file = $fileQuery->fetch_assoc();
+        $filePath = "uploads/resources/" . $file['filename'];
+
+        // Delete file from disk
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+
+        // Delete record from database
+        $conn->query("DELETE FROM resource_files WHERE id = $fileId");
+        $message = "File deleted successfully.";
+    } else {
+        $error = "File not found in database.";
+    }
+}
+
+// Handle File Upload
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['resource_file'])) {
     $title = $conn->real_escape_string($_POST['title']);
     $description = $conn->real_escape_string($_POST['description']);
     $uploadedBy = $_SESSION['user'];
 
-    if (isset($_FILES['resource_file']) && $_FILES['resource_file']['error'] === UPLOAD_ERR_OK) {
+    if ($_FILES['resource_file']['error'] === UPLOAD_ERR_OK) {
         $fileTmp = $_FILES['resource_file']['tmp_name'];
         $fileName = basename($_FILES['resource_file']['name']);
         $fileType = $_FILES['resource_file']['type'];
@@ -62,6 +86,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .alert { padding: 10px; border-radius: 5px; margin-bottom: 20px; }
         .success { background-color: #d4edda; color: #155724; }
         .error { background-color: #f8d7da; color: #721c24; }
+        .resource-list ul { list-style-type: none; padding: 0; }
+        .resource-list li { margin-bottom: 10px; background: #fff; padding: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .resource-list .actions { display: flex; gap: 10px; background: transparent; box-shadow: none;}
+        .resource-list .actions form { background: none; box-shadow: none; padding: 20px; margin: 0; }
+        .delete-btn { background-color: #D7263D; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; }
+        .delete-btn:hover { background-color: #a61b2b; }
     </style>
 </head>
 <body>
@@ -93,18 +123,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <button type="submit" class="submit-btn" id="submitBtn">Upload File</button>
     </form>
+
     <br>
     <hr>
     <h3>Uploaded Resources</h3>
-            <ul>
-                <?php
-                    $result = $conn->query("SELECT * FROM resource_files ORDER BY uploaded_at DESC");
-                    while ($row = $result->fetch_assoc()) {
-                        echo " " . htmlspecialchars($row['title']) . " ";
-                        echo "<li><a href='uploads/resources/" . htmlspecialchars($row['filename']) . "' target='_blank'>" . htmlspecialchars($row['filename']) . "</a> - " . htmlspecialchars($row['uploaded_by']) . " on " . date('F j, Y', strtotime($row['uploaded_at'])) . "</li>";
-                    }
-                ?>
-            </ul>
+    <div class="resource-list">
+        <ul>
+            <?php
+            $result = $conn->query("SELECT * FROM resource_files ORDER BY uploaded_at DESC");
+            while ($row = $result->fetch_assoc()):
+            ?>
+                <li>
+                    <div>
+                        <strong><?php echo htmlspecialchars($row['title']); ?></strong><br>
+                        <a href='uploads/resources/<?php echo htmlspecialchars($row['filename']); ?>' target='_blank'><?php echo htmlspecialchars($row['filename']); ?></a>
+                        <small> - <?php echo htmlspecialchars($row['uploaded_by']); ?> on <?php echo date('F j, Y', strtotime($row['uploaded_at'])); ?></small>
+                    </div>
+                    <div class="actions">
+                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this file?')">
+                            <input type="hidden" name="delete_file_id" value="<?php echo $row['id']; ?>">
+                            <button type="submit" class="delete-btn"><i class="fa fa-trash"></i> Delete</button>
+                        </form>
+                    </div>
+                </li>
+            <?php endwhile; ?>
+        </ul>
+    </div>
 </div>
 
 <script>
