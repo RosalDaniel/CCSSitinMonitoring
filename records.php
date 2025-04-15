@@ -84,7 +84,7 @@ while ($row = $labQuery->fetch_assoc()) {
         <table id="sitInRecords" class="display">
             <thead>
                 <tr>
-                    <th>Sit-in Number</th>
+                    <!-- <th>Sit-in Number</th> -->
                     <th>ID Number</th>
                     <th>Name</th>
                     <th>Purpose</th>
@@ -97,7 +97,7 @@ while ($row = $labQuery->fetch_assoc()) {
             <tbody>
                 <?php while ($row = $result->fetch_assoc()) : ?>
                     <tr>
-                        <td><?php echo $row['id']; ?></td>
+                        <!-- <td><?php echo $row['id']; ?></td> -->
                         <td><?php echo $row['idno']; ?></td>
                         <td><?php echo $row['name']; ?></td>
                         <td><?php echo $row['purpose']; ?></td>
@@ -116,6 +116,7 @@ while ($row = $labQuery->fetch_assoc()) {
             $('#sitInRecords').DataTable({
                 responsive: true,
                 ordering: true,
+                order: [[6, 'desc']],
                 search: true
             });
         });

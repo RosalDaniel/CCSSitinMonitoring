@@ -25,51 +25,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_file_id'])) {
     exit;
 }
 
-// Handle File Upload (AJAX-safe)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['resource_file'])) {
+// Handle File/Link Upload (AJAX-safe)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_type'])) {
     $title = $conn->real_escape_string($_POST['title']);
     $description = $conn->real_escape_string($_POST['description']);
     $uploadedBy = $_SESSION['user'];
+    $uploadType = $_POST['upload_type'];
 
-    if ($_FILES['resource_file']['error'] === UPLOAD_ERR_OK) {
-        $fileTmp = $_FILES['resource_file']['tmp_name'];
-        $originalName = basename($_FILES['resource_file']['name']);
-        $extension = pathinfo($originalName, PATHINFO_EXTENSION);
-        $safeName = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', pathinfo($originalName, PATHINFO_FILENAME));
-        $uniqueName = $safeName . '_' . time() . '.' . $extension;
+    if ($uploadType === 'file' && isset($_FILES['resource_file'])) {
+        if ($_FILES['resource_file']['error'] === UPLOAD_ERR_OK) {
+            $fileTmp = $_FILES['resource_file']['tmp_name'];
+            $originalName = basename($_FILES['resource_file']['name']);
+            $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+            $safeName = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', pathinfo($originalName, PATHINFO_FILENAME));
+            $uniqueName = $safeName . '_' . time() . '.' . $extension;
 
-        $allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
-        $fileType = mime_content_type($fileTmp);
+            $allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+            $fileType = mime_content_type($fileTmp);
 
-        if (!in_array($fileType, $allowedTypes)) {
-            echo "Invalid file type.";
-            exit;
-        }
-
-        $uploadDir = "uploads/resources/";
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
-        }
-
-        $destination = $uploadDir . $uniqueName;
-
-        if (move_uploaded_file($fileTmp, $destination)) {
-            $stmt = $conn->prepare("INSERT INTO resource_files (title, description, filename, file_type, uploaded_by) VALUES (?, ?, ?, ?, ?)");
-            $stmt->bind_param("sssss", $title, $description, $uniqueName, $fileType, $uploadedBy);
-            if ($stmt->execute()) {
-                echo "success";
-            } else {
-                echo "Database insert failed.";
+            if (!in_array($fileType, $allowedTypes)) {
+                echo "Invalid file type.";
+                exit;
             }
-            $stmt->close();
+
+            $uploadDir = "uploads/resources/";
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            $destination = $uploadDir . $uniqueName;
+
+            if (move_uploaded_file($fileTmp, $destination)) {
+                $stmt = $conn->prepare("INSERT INTO resource_files (title, description, filename, file_type, uploaded_by, resource_type) VALUES (?, ?, ?, ?, ?, 'file')");
+                $stmt->bind_param("sssss", $title, $description, $uniqueName, $fileType, $uploadedBy);
+                if ($stmt->execute()) {
+                    echo "success";
+                } else {
+                    echo "Database insert failed.";
+                }
+                $stmt->close();
+            }
         } else {
-            echo "Failed to upload file.";
+            echo "No file selected.";
         }
+    } elseif ($uploadType === 'link' && isset($_POST['resource_link'])) {
+        $link = $conn->real_escape_string($_POST['resource_link']);
+        $fakeType = 'external/link';
+        $stmt = $conn->prepare("INSERT INTO resource_files (title, description, filename, file_type, uploaded_by, resource_type) VALUES (?, ?, ?, ?, ?, 'link')");
+        $stmt->bind_param("sssss", $title, $description, $link, $fakeType, $uploadedBy);
+        if ($stmt->execute()) {
+            echo "success";
+        } else {
+            echo "Database insert failed.";
+        }
+        $stmt->close();
     } else {
-        echo "No file selected.";
+        echo "Invalid upload.";
     }
     exit;
 }
+
 ?>
 
 
@@ -165,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['resource_file'])) {
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal()">&times;</button>
             <h2 style="text-align:center; margin-bottom: 20px;">Upload Resource File</h2>
-            <form method="POST" enctype="multipart/form-data" onsubmit="return disableSubmit()">
+            <form method="POST" id="uploadForm" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="title">File Title</label>
                     <input type="text" name="title" id="title" required>
@@ -177,12 +192,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['resource_file'])) {
                 </div>
 
                 <div class="form-group">
-                    <label for="resource_file">Select File (PDF, DOCX, etc.)</label>
-                    <input type="file" name="resource_file" id="resource_file" accept=".pdf,.doc,.docx,.txt" required>
+                    <label for="upload_type">Upload Type</label>
+                    <select name="upload_type" id="upload_type" required onchange="toggleUploadType()">
+                        <option value="file" selected>Upload File</option>
+                        <option value="link">Submit Link</option>
+                    </select>
                 </div>
 
-                <button type="submit" class="submit-btn" id="submitBtn">Upload File</button>
+                <div class="form-group" id="fileInputGroup">
+                    <label for="resource_file">Select File</label>
+                    <input type="file" name="resource_file" id="resource_file" accept=".pdf,.doc,.docx,.txt">
+                </div>
+
+                <div class="form-group" id="linkInputGroup" style="display: none;">
+                    <label for="resource_link">Enter Link (e.g., Google Drive)</label>
+                    <input type="url" name="resource_link" id="resource_link" placeholder="https://drive.google.com/..." pattern="https?://.+" />
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">Submit</button>
             </form>
+
         </div>
     </div>
 
@@ -199,7 +228,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['resource_file'])) {
                 <li>
                     <div>
                         <strong><?php echo htmlspecialchars($row['title']); ?></strong><br>
-                        <a href='uploads/resources/<?php echo htmlspecialchars($row['filename']); ?>' target='_blank'><?php echo htmlspecialchars($row['filename']); ?></a>
+                        <?php if ($row['resource_type'] === 'link'): ?>
+                            <a href='<?php echo htmlspecialchars($row['filename']); ?>' target='_blank' style="color: blue;">
+                                 Open Link
+                            </a>
+                        <?php else: ?>
+                            <a href='uploads/resources/<?php echo htmlspecialchars($row['filename']); ?>' target='_blank'>
+                            </a>
+                        <?php endif; ?>
+
+
                         <small> - <?php echo htmlspecialchars($row['uploaded_by']); ?> on <?php echo date('F j, Y', strtotime($row['uploaded_at'])); ?></small>
                     </div>
                     <div class="actions">
@@ -230,6 +268,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['resource_file'])) {
         if (event.target === modal) {
             closeModal();
         }
+    }
+    function toggleUploadType() {
+        const type = document.getElementById('upload_type').value;
+        document.getElementById('fileInputGroup').style.display = type === 'file' ? 'block' : 'none';
+        document.getElementById('linkInputGroup').style.display = type === 'link' ? 'block' : 'none';
     }
 
     function fetchResourceList(search = '') {
