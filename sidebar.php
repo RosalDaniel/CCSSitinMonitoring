@@ -10,6 +10,7 @@ function renderSidebar() {
         <a href="records.php" title="View Sit-in Records"><i class="fa-solid fa-file-lines"></i><span>RECORDS</span></a>
         <a href="feedback_report.php" title="View Feedback Report"><i class="fa-solid fa-comments"></i><span>FEEDBACK</span></a>
         <a href="file_resources.php" title="Upload File Resources"><i class="fa-solid fa-file-arrow-up"></i><span>FILES</span></a>
+        <a href="leaderboard.php" title="Leaderboard"><i class="fa-solid fa-medal"></i><span>LEADERBOARD</span></a>
         <a href="#" title="View Reservation"><i class="fa-solid fa-calendar-days"></i><span>RESERVATION</span></a>
         <a href="logout.php" title="Logout"><i class="fa-solid fa-right-from-bracket"></i><span>LOGOUT</span></a>
     </div>';

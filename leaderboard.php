@@ -9,12 +9,13 @@ $query = $conn->query("
         s.idno, 
         CONCAT(s.lastname, ', ', s.firstname, ' ', s.middlename) AS name,
         COUNT(r.id) AS sitin_count,
-        SEC_TO_TIME(SUM(TIMESTAMPDIFF(SECOND, r.date_time, r.logout_time))) AS total_duration
+        SEC_TO_TIME(SUM(TIMESTAMPDIFF(SECOND, r.date_time, r.logout_time))) AS total_duration,
+        s.profile_image
     FROM student s
     LEFT JOIN sit_in_records r ON s.idno = r.idno
     GROUP BY s.idno
     ORDER BY sitin_count DESC
-    LIMIT 5
+    LIMIT 10
 ");
 
 // Prepare data for chart
@@ -38,8 +39,8 @@ while ($row = $query->fetch_assoc()) {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #0f172a;
+            font-family: Arial, sans-serif;
+            background: #081524;
             color: #f1f5f9;
         }
 
@@ -47,6 +48,7 @@ while ($row = $query->fetch_assoc()) {
             padding: 40px; 
             max-width: 1200px;
             margin: auto;
+            margin-top: -1px;
         }
 
         .leaderboard-title {
@@ -138,7 +140,7 @@ while ($row = $query->fetch_assoc()) {
 <body>
 <?php renderSidebar(); ?>
 <div class="leaderboard-wrapper">
-    <h1 class="leaderboard-title">🏆 Top 5 Active Students</h1>
+    <h1 class="leaderboard-title">🏆 Top Active Students</h1>
 
     <div class="top-three">
         <?php for ($i = 0; $i < min(3, count($students)); $i++): 
@@ -146,7 +148,7 @@ while ($row = $query->fetch_assoc()) {
             $rank = $i + 1;
         ?>
         <div class="top-card rank-<?php echo $rank; ?>">
-            <div class="profile-pic"><?php echo strtoupper(substr($student['name'], 0, 1)); ?></div>
+            <div class="profile-pic"><img src="uploads/<?= htmlspecialchars($student['profile_image']); ?>" alt="Profile Image" class="profile-pic"></div>
             <h2 class="name"><?php echo $student['name']; ?></h2>
             <p class="idno">@<?php echo $student['idno']; ?></p>
             <p class="score">Sit-ins: <?php echo $student['sitin_count']; ?></p>
